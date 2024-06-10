@@ -1,0 +1,3 @@
+sqlite3 ./database/data/vulnerabilities.db < ./database/data/schema.sql
+sqlite3 ./database/data/vulnerabilities.db
+SELECT * FROM vulnerabilities;
