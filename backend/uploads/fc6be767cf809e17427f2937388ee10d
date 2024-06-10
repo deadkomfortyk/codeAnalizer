@@ -1,0 +1,3 @@
+
+const userInput = "some input";
+eval(userInput);

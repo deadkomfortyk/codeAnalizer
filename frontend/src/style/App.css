@@ -1,0 +1,93 @@
+body {
+    background-color: #282c34;
+}
+.App {
+    text-align: center;
+    background-color: #282c34;
+    color: white;
+    min-height: 100vh;
+    padding: 20px;
+    font-family: 'Arial', sans-serif;
+
+}
+
+h1 {
+    font-size: 3em;
+    margin-bottom: 20px;
+}
+
+.buttons-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* Add gap to separate buttons */
+}
+
+.button {
+    font-size: 15px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 5px; /* Add margin to separate buttons */
+}
+
+.button:hover {
+    background-color: #0056b3;
+}
+
+/* Style for file input button */
+input[type="file"] {
+    display: none;
+}
+
+.custom-file-upload {
+    display: inline-block;
+    padding: 9px 20px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    margin: 5px; /* Add margin to separate buttons */
+}
+
+.custom-file-upload:hover {
+    background-color: #0056b3;
+}
+
+.statistics-container {
+    text-align: left; /* Ensure the content is left-aligned */
+    padding: 20px;
+}
+
+.statistics-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.statistics-table th,
+.statistics-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.statistics-table th {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.back-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.back-button:hover {
+    background-color: #0056b3;
+}

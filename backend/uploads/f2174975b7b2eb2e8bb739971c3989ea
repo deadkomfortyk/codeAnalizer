@@ -1,0 +1,3 @@
+
+user_input = "some input"
+exec(user_input)

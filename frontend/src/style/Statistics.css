@@ -1,0 +1,80 @@
+.statistics-container {
+    width: 80%;
+    margin: 20px auto;
+    text-align: left; /* Ensure the content is left-aligned */
+}
+
+.statistics-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #333;
+}
+
+.statistics-table th, .statistics-table td {
+    padding: 12px;
+    border: 1px solid #444;
+    color: white;
+    text-align: left; /* Ensure the content is left-aligned */
+}
+
+.statistics-table th {
+    background-color: #555;
+}
+
+.statistics-table tr:nth-child(even) {
+    background-color: #444;
+}
+
+.statistics-table button {
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.statistics-table button:hover {
+    background-color: #0056b3;
+}
+
+.back-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    display: block;
+    width: 100px;
+    text-align: center;
+    margin: 20px auto;
+    text-decoration: none; /* Забирає підкреслення */
+}
+
+.clear-button {
+    padding: 8px 12px;
+    background-color: #ff4d4d; /* Червоний колір */
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-left: 10px;
+}
+
+.clear-button:hover {
+    background-color: #cc0000; /* Темніший відтінок червоного при наведенні */
+}
+
+.buttons-container-statistics {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+a, a:link, a:visited {
+    text-decoration: none; /* Забирає підкреслення у всіх станах */
+    color: inherit; /* Наслідує колір */
+}

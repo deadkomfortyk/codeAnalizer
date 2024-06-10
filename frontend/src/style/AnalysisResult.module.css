@@ -1,0 +1,55 @@
+.analysisResult {
+    text-align: left;
+    padding: 20px;
+}
+
+.codeContainer {
+    display: flex;
+}
+
+.lineNumbers {
+    text-align: right;
+    padding-right: 10px;
+    user-select: none;
+    color: #888;
+}
+
+.lineNumber {
+    height: 1.5em;
+}
+
+.codeBlock {
+    background-color: #1e1e1e;
+    color: white;
+    padding: 20px;
+    border-radius: 5px;
+    overflow-x: auto;
+    white-space: pre;
+}
+
+.issuesList {
+    list-style-type: none;
+    padding: 0;
+}
+
+.issueItem {
+    color: red;
+}
+
+.noIssues {
+    color: green;
+}
+
+.exportButton {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 5px;
+}
+
+.exportButton:hover {
+    background-color: #0056b3;
+}
