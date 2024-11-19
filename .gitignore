@@ -4,6 +4,11 @@
 /node_modules
 /.pnp
 .pnp.js
+.cache/
+*.pack
+*.lock
+frontend/node_modules/
+frontend/.cache/
 
 # testing
 /coverage
