@@ -1,8 +1,4 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-const db = new sqlite3.Database(path.join(__dirname, '../database/data/vulnerabilities.db'));
-
-function analyzeJavaScript(code, vulnerabilities) {
+const analyzeJavaScript = (code, vulnerabilities) => {
     const issues = [];
     const lines = code.split('\n');
     vulnerabilities.forEach(vulnerability => {
@@ -16,9 +12,9 @@ function analyzeJavaScript(code, vulnerabilities) {
         });
     });
     return issues;
-}
+};
 
-function analyzeC(code, vulnerabilities) {
+const analyzeC = (code, vulnerabilities) => {
     const issues = [];
     const lines = code.split('\n');
     vulnerabilities.forEach(vulnerability => {
@@ -32,9 +28,9 @@ function analyzeC(code, vulnerabilities) {
         });
     });
     return issues;
-}
+};
 
-function analyzePython(code, vulnerabilities) {
+const analyzePython = (code, vulnerabilities) => {
     const issues = [];
     const lines = code.split('\n');
     vulnerabilities.forEach(vulnerability => {
@@ -48,10 +44,14 @@ function analyzePython(code, vulnerabilities) {
         });
     });
     return issues;
-}
+};
 
-function analyzeCode(language, code, vulnerabilities) {
-    const uniqueVulnerabilities = Array.from(new Set(vulnerabilities.map(v => JSON.stringify(v)))).map(v => JSON.parse(v));
+const analyzeCode = (language, code, vulnerabilities) => {
+    // Уникальні вразливості для усунення дублювань
+    const uniqueVulnerabilities = Array.from(
+        new Set(vulnerabilities.map(v => JSON.stringify(v)))
+    ).map(v => JSON.parse(v));
+
     switch (language) {
         case 'javascript':
             return analyzeJavaScript(code, uniqueVulnerabilities);
@@ -62,6 +62,6 @@ function analyzeCode(language, code, vulnerabilities) {
         default:
             return [];
     }
-}
+};
 
 module.exports = { analyzeCode };

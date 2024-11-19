@@ -3,18 +3,28 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const { analyzeCode } = require('./analyzeCode');
 const { generatePDF } = require('./generatePDF');
 
 const app = express();
 const port = 3001;
 
-const db = new sqlite3.Database(path.join(__dirname, '../database/data/vulnerabilities.db'), (err) => {
+// PostgreSQL connection setup
+const pool = new Pool({
+    user: 'postgres', // Змініть на свого користувача
+    host: 'localhost',
+    database: 'codeanalizer', // Назва вашої бази даних
+    password: 'servicemil', // Пароль користувача
+    port: 5432, // Стандартний порт PostgreSQL
+});
+
+// Перевірка з'єднання з базою даних
+pool.connect((err) => {
     if (err) {
-        console.error('Could not connect to database', err);
+        console.error('Database connection error:', err.stack);
     } else {
-        console.log('Connected to database');
+        console.log('Connected to PostgreSQL database');
     }
 });
 
@@ -57,34 +67,22 @@ app.post('/upload', upload.single('codefile'), async (req, res) => {
     }
 
     try {
-        const dbVulnerabilities = await new Promise((resolve, reject) => {
-            db.all('SELECT * FROM vulnerabilities WHERE language = ?', [detectedLanguage], (err, rows) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(rows);
-                }
-            });
-        });
+        const dbVulnerabilities = await pool.query(
+            'SELECT * FROM vulnerabilities WHERE language = $1',
+            [detectedLanguage]
+        );
 
-        console.log(`Loaded vulnerability patterns from database: ${JSON.stringify(dbVulnerabilities)}`);
+        console.log(`Loaded vulnerability patterns from database: ${JSON.stringify(dbVulnerabilities.rows)}`);
 
-        const issues = analyzeCode(detectedLanguage, fileContent, dbVulnerabilities);
+        const issues = analyzeCode(detectedLanguage, fileContent, dbVulnerabilities.rows);
 
         console.log(`Detected issues: ${JSON.stringify(issues)}`);
 
         // Save analysis statistics
         const vulnerabilitiesDetected = issues.length;
-        db.run(
-            'INSERT INTO analysis_statistics (file_name, language, vulnerabilities_detected) VALUES (?, ?, ?)',
-            [req.file.originalname, detectedLanguage, vulnerabilitiesDetected],
-            (err) => {
-                if (err) {
-                    console.error('Error saving analysis statistics', err);
-                } else {
-                    console.log('Analysis statistics saved');
-                }
-            }
+        await pool.query(
+            'INSERT INTO analysis_statistics (file_name, language, vulnerabilities_detected) VALUES ($1, $2, $3)',
+            [req.file.originalname, detectedLanguage, vulnerabilitiesDetected]
         );
 
         res.json({ message: 'File uploaded and analyzed', fileContent, language: detectedLanguage, issues });
@@ -116,75 +114,32 @@ app.post('/generate-pdf', async (req, res) => {
     }
 });
 
-app.get('/statistics', (req, res) => {
-    db.all('SELECT * FROM analysis_statistics', (err, rows) => {
-        if (err) {
-            res.status(500).json({ message: 'Error fetching statistics', error: err.message });
-        } else {
-            res.json(rows);
-        }
-    });
+app.get('/statistics', async (req, res) => {
+    try {
+        const stats = await pool.query('SELECT * FROM analysis_statistics');
+        res.json(stats.rows);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching statistics', error: error.message });
+    }
 });
 
-app.delete('/statistics/:id', (req, res) => {
+app.delete('/statistics/:id', async (req, res) => {
     const id = req.params.id;
-    db.run('DELETE FROM analysis_statistics WHERE id = ?', [id], function (err) {
-        if (err) {
-            res.status(500).json({ message: 'Error deleting record', error: err.message });
-        } else {
-            // Перебудувати таблицю після видалення запису
-            db.serialize(() => {
-                db.run('CREATE TEMPORARY TABLE temp_table AS SELECT * FROM analysis_statistics', (err) => {
-                    if (err) {
-                        res.status(500).json({ message: 'Error creating temporary table', error: err.message });
-                        return;
-                    }
-                    db.run('DROP TABLE analysis_statistics', (err) => {
-                        if (err) {
-                            res.status(500).json({ message: 'Error dropping original table', error: err.message });
-                            return;
-                        }
-                        db.run('CREATE TABLE analysis_statistics (id INTEGER PRIMARY KEY AUTOINCREMENT, file_name TEXT, language TEXT, vulnerabilities_detected INTEGER, analysis_date DATETIME DEFAULT CURRENT_TIMESTAMP)', (err) => {
-                            if (err) {
-                                res.status(500).json({ message: 'Error creating new table', error: err.message });
-                                return;
-                            }
-                            db.run('INSERT INTO analysis_statistics (file_name, language, vulnerabilities_detected, analysis_date) SELECT file_name, language, vulnerabilities_detected, analysis_date FROM temp_table', (err) => {
-                                if (err) {
-                                    res.status(500).json({ message: 'Error transferring data to new table', error: err.message });
-                                } else {
-                                    db.run('DROP TABLE temp_table', (err) => {
-                                        if (err) {
-                                            res.status(500).json({ message: 'Error dropping temporary table', error: err.message });
-                                        } else {
-                                            res.json({ message: 'Record deleted and table rebuilt', id });
-                                        }
-                                    });
-                                }
-                            });
-                        });
-                    });
-                });
-            });
-        }
-    });
+    try {
+        await pool.query('DELETE FROM analysis_statistics WHERE id = $1', [id]);
+        res.json({ message: 'Record deleted', id });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting record', error: error.message });
+    }
 });
 
-app.delete('/statistics', (req, res) => {
-    db.run('DELETE FROM analysis_statistics', (err) => {
-        if (err) {
-            res.status(500).json({ message: 'Error clearing statistics', error: err.message });
-        } else {
-            // Reset ID sequence after clearing table
-            db.run('DELETE FROM sqlite_sequence WHERE name="analysis_statistics"', (err) => {
-                if (err) {
-                    res.status(500).json({ message: 'Error resetting ID sequence', error: err.message });
-                } else {
-                    res.json({ message: 'All statistics cleared and ID sequence reset' });
-                }
-            });
-        }
-    });
+app.delete('/statistics', async (req, res) => {
+    try {
+        await pool.query('DELETE FROM analysis_statistics');
+        res.json({ message: 'All statistics cleared' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error clearing statistics', error: error.message });
+    }
 });
 
 app.listen(port, () => {
