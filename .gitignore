@@ -7,9 +7,9 @@
 .cache/
 *.pack
 *.lock
-/frontend/node_modules/
-/frontend/.cache/
-/frontend/node_modules/.cache/
+frontend/node_modules/
+
+
 # testing
 /coverage
 
